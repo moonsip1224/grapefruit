@@ -2,7 +2,7 @@
 
 # Health check script for Railway deployment
 
-# Check if VNC server is running (internal only)
+# Check if VNC server is running
 if ! pgrep -f "Xvnc" > /dev/null; then
     echo "VNC server is not running"
     exit 1
@@ -14,21 +14,15 @@ if ! pgrep -f "websockify" > /dev/null; then
     exit 1
 fi
 
-# Check if websockify port is listening (internal)
-if ! nc -z localhost 6081; then
-    echo "Websockify port 6081 is not listening"
+# Check if VNC port is listening
+if ! nc -z localhost 5901; then
+    echo "VNC port 5901 is not listening"
     exit 1
 fi
 
-# Check if nginx is running
-if ! pgrep -f "nginx" > /dev/null; then
-    echo "Nginx is not running"
-    exit 1
-fi
-
-# Check if nginx port is listening (Railway exposed port)
+# Check if websockify port is listening
 if ! nc -z localhost 6080; then
-    echo "Nginx port 6080 is not listening"
+    echo "Websockify port 6080 is not listening"
     exit 1
 fi
 

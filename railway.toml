@@ -2,10 +2,8 @@
 builder = "dockerfile"
 
 [deploy]
-startCommand = "/scripts/railway-optimized-start.sh"
+startCommand = "/start.sh"
 restartPolicyType = "always"
-healthcheckPath = "/health"
-healthcheckTimeout = 300
 
 [[services]]
 name = "roblox-studio-web"

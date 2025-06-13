@@ -36,7 +36,10 @@ RUN apt-get update && apt-get install -y \
     # Health check utilities
     netcat-openbsd \
     # File management
-    file-manager-actions thunar \
+    thunar \
+    # Additional desktop utilities
+    firefox-esr \
+    gedit \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -48,12 +51,13 @@ RUN useradd -m -s /bin/bash vncuser && \
 USER vncuser
 WORKDIR /home/vncuser
 
-# Configure Wine
-RUN winecfg
+# Configure Wine (non-interactive)
+ENV WINEDLLOVERRIDES="mscoree,mshtml="
+RUN wineboot --init
 
 # Set up VNC server
 RUN mkdir -p ~/.vnc && \
-    echo '${VNC_PASSWORD:-robloxstudio2024}' | vncpasswd -f > ~/.vnc/passwd && \
+    echo 'robloxstudio2024' | vncpasswd -f > ~/.vnc/passwd && \
     chmod 600 ~/.vnc/passwd
 
 # Create VNC startup script
