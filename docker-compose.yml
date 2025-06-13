@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  roblox-studio-web:
+    build: .
+    ports:
+      - "6080:6080"
+      - "5901:5901"
+      - "80:80"
+    environment:
+      - PORT=6080
+      - VNC_PORT=5901
+      - DISPLAY=:1
+      - VNC_PASSWORD=robloxstudio2024
+      - RESOLUTION=1920x1080
+      - COLOR_DEPTH=24
+      - NODE_ENV=development
+    volumes:
+      - wine_data:/home/vncuser/.wine
+      - desktop_data:/home/vncuser/Desktop
+      - logs:/var/log
+    restart: unless-stopped
+    healthcheck:
+      test: ["/health-check.sh"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+volumes:
+  wine_data:
+    driver: local
+  desktop_data:
+    driver: local
+  logs:
+    driver: local
