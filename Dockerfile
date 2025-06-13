@@ -9,7 +9,7 @@ ENV DISPLAY=:1
 
 # Set environment variables for Railway
 ENV PORT=6080
-ENV VNC_PORT=5901
+ENV NOVNC_PORT=6080
 ENV RESOLUTION=1920x1080
 ENV COLOR_DEPTH=24
 
@@ -22,7 +22,9 @@ RUN apt-get update && apt-get install -y \
     # noVNC for web access
     novnc websockify \
     # Wine for running Windows applications
-    wine winetricks \
+    wine winetricks cabextract \
+    # Wine dependencies
+    winbind \
     # Additional utilities
     wget curl unzip supervisor nginx \
     # X11 utilities
@@ -36,7 +38,10 @@ RUN apt-get update && apt-get install -y \
     # Health check utilities
     netcat-openbsd \
     # File management
-    file-manager-actions thunar \
+    thunar \
+    # Additional desktop utilities
+    firefox-esr \
+    gedit \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -48,12 +53,13 @@ RUN useradd -m -s /bin/bash vncuser && \
 USER vncuser
 WORKDIR /home/vncuser
 
-# Configure Wine
-RUN winecfg
+# Configure Wine (non-interactive)
+ENV WINEDLLOVERRIDES="mscoree,mshtml="
+RUN wineboot --init
 
 # Set up VNC server
 RUN mkdir -p ~/.vnc && \
-    echo '${VNC_PASSWORD:-robloxstudio2024}' | vncpasswd -f > ~/.vnc/passwd && \
+    echo 'robloxstudio2024' | vncpasswd -f > ~/.vnc/passwd && \
     chmod 600 ~/.vnc/passwd
 
 # Create VNC startup script
@@ -81,23 +87,24 @@ COPY nginx.conf /etc/nginx/nginx.conf
 # Create supervisor configuration
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-# Create health check script
+# Create health check scripts
 COPY scripts/health-check.sh /health-check.sh
-RUN chmod +x /health-check.sh
+COPY scripts/railway-health-check.sh /railway-health-check.sh
+RUN chmod +x /health-check.sh /railway-health-check.sh
 
-# Create startup script
+# Create startup scripts
 COPY scripts/start.sh /start.sh
-RUN chmod +x /start.sh
+COPY scripts/railway-optimized-start.sh /scripts/railway-optimized-start.sh
+RUN chmod +x /start.sh /scripts/railway-optimized-start.sh
 
-# Create volume for persistent data
-VOLUME ["/home/vncuser/.wine", "/home/vncuser/Desktop"]
+# Note: Railway manages persistent storage - no VOLUME declarations needed
 
-# Expose ports
-EXPOSE 5901 6080 80
+# Expose only web ports (Railway doesn't allow VNC direct access)
+EXPOSE 6080
 
-# Health check
+# Health check (Railway optimized)
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD /health-check.sh
+    CMD /railway-health-check.sh
 
-# Set the startup command
-CMD ["/start.sh"]
+# Set the startup command (Railway optimized)
+CMD ["/scripts/railway-optimized-start.sh"]

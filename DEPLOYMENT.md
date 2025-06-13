@@ -71,13 +71,17 @@ COLOR_DEPTH = "16"
 
 ### 3. Networking
 ```
-Internet → Railway → Nginx (Port 80) → noVNC (Port 6080) → VNC (Port 5901) → Desktop
+Internet → Railway → noVNC/Websockify (Port 6080) → VNC (Port 5901 - Internal) → Desktop
 ```
+
+**Note**: Railway doesn't allow direct VNC connections. Only web-based noVNC access is supported.
 
 ### 4. Storage
 - **Wine Data**: `/home/vncuser/.wine` (Roblox Studio installation)
 - **Desktop Files**: `/home/vncuser/Desktop` (Your projects)
 - **Logs**: `/var/log` (Service logs)
+
+**Note**: Railway manages persistent storage automatically. No volume declarations are needed in the Docker configuration.
 
 ## Performance Optimization
 

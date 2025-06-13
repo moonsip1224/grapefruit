@@ -13,10 +13,10 @@ This project sets up Roblox Studio to run in a web browser through Railway.com u
 ## How it Works
 
 1. **Docker Container**: Ubuntu-based container with XFCE desktop environment
-2. **VNC Server**: Provides remote desktop access
-3. **noVNC**: Web-based VNC client for browser access
+2. **VNC Server**: Internal desktop server (not exposed externally)
+3. **noVNC + Websockify**: Web-based VNC client accessible through browser
 4. **Wine**: Compatibility layer to run Roblox Studio (Windows app) on Linux
-5. **Railway**: Cloud platform hosting the container
+5. **Railway**: Cloud platform hosting the container (VNC-compatible via noVNC only)
 
 ## Deployment Instructions
 
@@ -39,7 +39,7 @@ This project sets up Roblox Studio to run in a web browser through Railway.com u
    - Once deployed, Railway will provide a URL
    - Open the URL in your browser
    - You'll see the noVNC interface
-   - Password: `vncpassword`
+   - Password: `robloxstudio2024`
 
 ### Option 2: Local Development
 
@@ -48,7 +48,7 @@ This project sets up Roblox Studio to run in a web browser through Railway.com u
 docker build -t roblox-studio-web .
 
 # Run the container
-docker run -p 6080:6080 roblox-studio-web
+docker run -p 6080:6080 -p 5901:5901 roblox-studio-web
 
 # Access via browser
 open http://localhost:6080
@@ -57,7 +57,7 @@ open http://localhost:6080
 ## Usage
 
 1. **Access the Desktop**: Open the Railway URL in your browser
-2. **VNC Password**: Enter `vncpassword` when prompted
+2. **VNC Password**: Enter `robloxstudio2024` when prompted
 3. **Wait for Installation**: Roblox Studio will install automatically on first run
 4. **Start Creating**: Once installed, you can launch Roblox Studio and start building games!
 
@@ -110,7 +110,9 @@ open http://localhost:6080
 
 ## Security Notes
 
-- The VNC password is set to `vncpassword` (change in production)
+- The VNC password is set to `robloxstudio2024` (change in production)
+- VNC server is only accessible internally via noVNC web interface
+- Railway provides HTTPS by default for secure web access
 - This setup is intended for development/testing purposes
 - Consider additional security measures for production use
 

@@ -8,9 +8,9 @@ if ! pgrep -f "Xvnc" > /dev/null; then
     exit 1
 fi
 
-# Check if noVNC is running
+# Check if websockify is running
 if ! pgrep -f "websockify" > /dev/null; then
-    echo "noVNC websockify is not running"
+    echo "Websockify is not running"
     exit 1
 fi
 
@@ -20,21 +20,9 @@ if ! nc -z localhost 5901; then
     exit 1
 fi
 
-# Check if noVNC port is listening
+# Check if websockify port is listening
 if ! nc -z localhost 6080; then
-    echo "noVNC port 6080 is not listening"
-    exit 1
-fi
-
-# Check if nginx is running
-if ! pgrep -f "nginx" > /dev/null; then
-    echo "Nginx is not running"
-    exit 1
-fi
-
-# Check if nginx port is listening
-if ! nc -z localhost 80; then
-    echo "Nginx port 80 is not listening"
+    echo "Websockify port 6080 is not listening"
     exit 1
 fi
 
