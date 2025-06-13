@@ -5,6 +5,28 @@
 
 echo "🚀 Starting Railway Roblox Studio Environment (noVNC only)..."
 
+# Check for required dependencies
+echo "🔍 Checking dependencies..."
+MISSING_DEPS=""
+
+if ! command -v vncserver &> /dev/null; then
+    MISSING_DEPS="$MISSING_DEPS vncserver"
+fi
+
+if ! command -v websockify &> /dev/null; then
+    MISSING_DEPS="$MISSING_DEPS websockify"
+fi
+
+if ! command -v wine &> /dev/null; then
+    MISSING_DEPS="$MISSING_DEPS wine"
+fi
+
+if [ -n "$MISSING_DEPS" ]; then
+    echo "❌ Missing dependencies:$MISSING_DEPS"
+    echo "🔧 Installing missing dependencies..."
+    apt-get update && apt-get install -y $MISSING_DEPS
+fi
+
 # Set Railway environment variables
 export PORT=${PORT:-6080}
 export RESOLUTION=${RESOLUTION:-1920x1080}
@@ -43,7 +65,21 @@ sleep 10
 
 # Start websockify with noVNC web interface directly on Railway port
 echo "🌐 Starting noVNC web interface on port $PORT..."
-websockify --web /usr/share/novnc $PORT localhost:5901 &
+# Check if noVNC directory exists, use fallback if needed
+if [ -d "/usr/share/novnc" ]; then
+    NOVNC_PATH="/usr/share/novnc"
+elif [ -d "/usr/share/novnc-core" ]; then
+    NOVNC_PATH="/usr/share/novnc-core"
+else
+    echo "⚠️  noVNC directory not found, using basic websockify..."
+    NOVNC_PATH=""
+fi
+
+if [ -n "$NOVNC_PATH" ]; then
+    websockify --web $NOVNC_PATH $PORT localhost:5901 &
+else
+    websockify $PORT localhost:5901 &
+fi
 
 # Install Roblox Studio in background if not present
 if [ ! -f "/home/vncuser/.wine/drive_c/users/vncuser/AppData/Local/Roblox/Versions/RobloxStudioBeta.exe" ]; then
@@ -68,7 +104,11 @@ while true; do
     # Check if websockify is still running
     if ! pgrep -f "websockify" > /dev/null; then
         echo "❌ Websockify died, restarting..."
-        websockify --web /usr/share/novnc $PORT localhost:5901 &
+        if [ -n "$NOVNC_PATH" ]; then
+            websockify --web $NOVNC_PATH $PORT localhost:5901 &
+        else
+            websockify $PORT localhost:5901 &
+        fi
         sleep 5
     fi
     

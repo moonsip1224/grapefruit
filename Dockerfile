@@ -22,7 +22,9 @@ RUN apt-get update && apt-get install -y \
     # noVNC for web access
     novnc websockify \
     # Wine for running Windows applications
-    wine winetricks \
+    wine winetricks cabextract \
+    # Wine dependencies
+    winbind \
     # Additional utilities
     wget curl unzip supervisor nginx \
     # X11 utilities
