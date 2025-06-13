@@ -14,6 +14,11 @@ E: Unable to locate package [package-name]
 - Try alternative packages
 - Update the Dockerfile to remove problematic packages
 
+**Common Package Issues**:
+- `file-manager-actions` → Remove (not available in Ubuntu 22.04)
+- `firefox-esr` → Use `firefox` instead
+- Always verify package names for the specific Ubuntu version
+
 #### Wine Configuration Issues
 ```
 Wine configuration failed
