@@ -81,6 +81,8 @@ Internet → Railway → noVNC/Websockify (Port 6080) → VNC (Port 5901 - Inter
 - **Desktop Files**: `/home/vncuser/Desktop` (Your projects)
 - **Logs**: `/var/log` (Service logs)
 
+**Note**: Railway manages persistent storage automatically. No volume declarations are needed in the Docker configuration.
+
 ## Performance Optimization
 
 ### Railway Plan Recommendations

@@ -91,8 +91,7 @@ COPY scripts/start.sh /start.sh
 COPY scripts/railway-optimized-start.sh /scripts/railway-optimized-start.sh
 RUN chmod +x /start.sh /scripts/railway-optimized-start.sh
 
-# Create volume for persistent data
-VOLUME ["/home/vncuser/.wine", "/home/vncuser/Desktop"]
+# Note: Railway manages persistent storage - no VOLUME declarations needed
 
 # Expose only web ports (Railway doesn't allow VNC direct access)
 EXPOSE 6080

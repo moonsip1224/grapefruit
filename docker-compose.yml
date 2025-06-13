@@ -13,10 +13,8 @@ services:
       - RESOLUTION=1920x1080
       - COLOR_DEPTH=24
       - NODE_ENV=development
-    volumes:
-      - wine_data:/home/vncuser/.wine
-      - desktop_data:/home/vncuser/Desktop
-      - logs:/var/log
+    # Note: Railway manages persistent storage automatically
+    # No volume declarations needed for Railway deployment
     restart: unless-stopped
     healthcheck:
       test: ["/health-check.sh"]
@@ -25,10 +23,4 @@ services:
       retries: 3
       start_period: 60s
 
-volumes:
-  wine_data:
-    driver: local
-  desktop_data:
-    driver: local
-  logs:
-    driver: local
+# Railway manages volumes automatically - no volume definitions needed
