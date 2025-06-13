@@ -48,7 +48,7 @@ This project sets up Roblox Studio to run in a web browser through Railway.com u
 docker build -t roblox-studio-web .
 
 # Run the container
-docker run -p 6080:6080 roblox-studio-web
+docker run -p 6080:6080 -p 5901:5901 roblox-studio-web
 
 # Access via browser
 open http://localhost:6080
