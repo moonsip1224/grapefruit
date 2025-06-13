@@ -7,6 +7,7 @@ export RESOLUTION=${RESOLUTION:-1920x1080}
 export COLOR_DEPTH=${COLOR_DEPTH:-24}
 export VNC_PASSWORD=${VNC_PASSWORD:-robloxstudio2024}
 export PORT=${PORT:-6080}
+export NOVNC_PORT=${NOVNC_PORT:-6080}
 
 # Create necessary directories
 mkdir -p /var/log/nginx
@@ -26,9 +27,8 @@ export XKL_XMODMAP_DISABLE=1
 EOF
 chmod +x ~/.vnc/xstartup"
 
-# Start nginx
-echo "Starting nginx..."
-nginx -g "daemon off;" &
+# Start nginx (will be managed by supervisor)
+echo "Nginx will be started by supervisor..."
 
 # Install Roblox Studio if not already installed
 if [ ! -f "/home/vncuser/.wine/drive_c/users/vncuser/AppData/Local/Roblox/Versions/RobloxStudioBeta.exe" ]; then

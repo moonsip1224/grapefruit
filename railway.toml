@@ -2,7 +2,7 @@
 builder = "dockerfile"
 
 [deploy]
-startCommand = "/start.sh"
+startCommand = "/scripts/railway-optimized-start.sh"
 restartPolicyType = "always"
 healthcheckPath = "/health"
 healthcheckTimeout = 300
@@ -12,9 +12,9 @@ name = "roblox-studio-web"
 
 [services.variables]
 PORT = "6080"
-VNC_PORT = "5901"
 DISPLAY = ":1"
 VNC_PASSWORD = "robloxstudio2024"
 RESOLUTION = "1920x1080"
 COLOR_DEPTH = "24"
 NODE_ENV = "production"
+NOVNC_PORT = "6080"
