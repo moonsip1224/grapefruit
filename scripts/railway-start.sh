@@ -81,6 +81,9 @@ setup_environment() {
     # Create VNC password file
     echo "$VNC_PASSWORD" | su - vncuser -c "vncpasswd -f > ~/.vnc/passwd && chmod 600 ~/.vnc/passwd"
     
+    # Create X authority file
+    su - vncuser -c "touch ~/.Xauthority && chmod 600 ~/.Xauthority"
+    
     # Create optimized VNC startup script
     su - vncuser -c "cat > ~/.vnc/xstartup << 'EOF'
 #!/bin/bash
@@ -102,8 +105,18 @@ xsetroot -solid '#2e3440' 2>/dev/null || true
 # Disable keyboard mapping issues
 export XKL_XMODMAP_DISABLE=1
 
-# Start window manager
-exec startxfce4 >/dev/null 2>&1
+# Start D-Bus session
+if [ -z \"\$DBUS_SESSION_BUS_ADDRESS\" ]; then
+    eval \$(dbus-launch --sh-syntax) 2>/dev/null || true
+fi
+
+# Start window manager with fallback
+if command -v startxfce4 >/dev/null 2>&1; then
+    exec startxfce4 2>/dev/null
+else
+    # Fallback to basic window manager
+    exec xfwm4 2>/dev/null || exec twm 2>/dev/null
+fi
 EOF
 chmod +x ~/.vnc/xstartup"
 
@@ -138,7 +151,7 @@ start_vnc() {
         sleep 3
         
         # Check if display is still in use
-        if ss -ln | grep -q ":5901"; then
+        if netstat -ln 2>/dev/null | grep -q ":5901" || ss -ln 2>/dev/null | grep -q ":5901"; then
             log "⚠️  Display :1 still in use, waiting..."
             sleep 5
             continue
@@ -149,7 +162,7 @@ start_vnc() {
         if su - vncuser -c "vncserver :1 -geometry $VNC_GEOMETRY -depth $COLOR_DEPTH -localhost -dontdisconnect"; then
             # Wait and verify VNC is running
             sleep 5
-            if pgrep -f "Xvnc.*:1" >/dev/null && ss -ln | grep -q ":5901"; then
+            if pgrep -f "Xvnc.*:1" >/dev/null && (netstat -ln 2>/dev/null | grep -q ":5901" || ss -ln 2>/dev/null | grep -q ":5901"); then
                 log "✅ VNC server started successfully"
                 return 0
             else
@@ -165,7 +178,11 @@ start_vnc() {
     
     log "❌ Failed to start VNC server after $max_retries attempts"
     log "Checking VNC logs..."
-    su - vncuser -c "cat ~/.vnc/*.log 2>/dev/null | tail -20" || true
+    su - vncuser -c "cat ~/.vnc/*.log 2>/dev/null | tail -30" || true
+    log "Checking xstartup script..."
+    su - vncuser -c "cat ~/.vnc/xstartup" || true
+    log "Testing XFCE4 availability..."
+    command -v startxfce4 && echo "startxfce4 found" || echo "startxfce4 NOT found"
     return 1
 }
 
@@ -246,7 +263,7 @@ monitor_processes() {
     
     while true; do
         # Check VNC server
-        if ! pgrep -f "Xvnc.*:1" >/dev/null || ! ss -ln | grep -q ":5901"; then
+        if ! pgrep -f "Xvnc.*:1" >/dev/null || ! (netstat -ln 2>/dev/null | grep -q ":5901" || ss -ln 2>/dev/null | grep -q ":5901"); then
             if [ $vnc_restart_count -lt $max_restarts ]; then
                 vnc_restart_count=$((vnc_restart_count + 1))
                 log "❌ VNC server died, restarting (attempt $vnc_restart_count/$max_restarts)..."
@@ -266,7 +283,7 @@ monitor_processes() {
         fi
         
         # Check websockify
-        if ! pgrep -f "websockify.*$PORT" >/dev/null || ! ss -ln | grep -q ":$PORT"; then
+        if ! pgrep -f "websockify.*$PORT" >/dev/null || ! (netstat -ln 2>/dev/null | grep -q ":$PORT" || ss -ln 2>/dev/null | grep -q ":$PORT"); then
             if [ $ws_restart_count -lt $max_restarts ]; then
                 ws_restart_count=$((ws_restart_count + 1))
                 log "❌ Websockify died, restarting (attempt $ws_restart_count/$max_restarts)..."
@@ -285,7 +302,7 @@ monitor_processes() {
         # Log status every 5 minutes
         if [ $(($(date +%s) % 300)) -eq 0 ]; then
             log "✅ Services status - VNC: $(pgrep -f "Xvnc.*:1" | wc -l), WebSockify: $(pgrep -f "websockify.*$PORT" | wc -l)"
-            log "📊 Port status - VNC:5901: $(ss -ln | grep -c ":5901"), Web:$PORT: $(ss -ln | grep -c ":$PORT")"
+            log "📊 Port status - VNC:5901: $(netstat -ln 2>/dev/null | grep -c ":5901"), Web:$PORT: $(netstat -ln 2>/dev/null | grep -c ":$PORT")"
         fi
         
         sleep 30

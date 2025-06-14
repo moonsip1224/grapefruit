@@ -19,7 +19,7 @@ RUN dpkg --add-architecture i386
 # Install system dependencies with proper wine32 support
 RUN apt-get update && apt-get install -y \
     # Desktop environment
-    xfce4 xfce4-goodies \
+    xfce4 xfce4-goodies dbus-x11 \
     # VNC server
     tightvncserver \
     # noVNC for web access
@@ -29,7 +29,7 @@ RUN apt-get update && apt-get install -y \
     # Wine dependencies
     winbind \
     # Essential utilities
-    wget curl unzip \
+    wget curl unzip iproute2 \
     # X11 utilities
     x11-utils x11-apps \
     # Audio support
