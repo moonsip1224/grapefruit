@@ -54,7 +54,7 @@ validate_env() {
 check_dependencies() {
     local missing_deps=""
     
-    for cmd in vncserver websockify wine Xvfb; do
+    for cmd in vncserver websockify wine; do
         if ! command -v "$cmd" >/dev/null 2>&1; then
             missing_deps="$missing_deps $cmd"
         fi
