@@ -13,7 +13,10 @@ ENV NOVNC_PORT=6080
 ENV RESOLUTION=1920x1080
 ENV COLOR_DEPTH=24
 
-# Install system dependencies
+# Enable multiarch for wine32 support
+RUN dpkg --add-architecture i386
+
+# Install system dependencies with proper wine32 support
 RUN apt-get update && apt-get install -y \
     # Desktop environment
     xfce4 xfce4-goodies \
@@ -21,12 +24,12 @@ RUN apt-get update && apt-get install -y \
     tightvncserver \
     # noVNC for web access
     novnc websockify \
-    # Wine for running Windows applications
-    wine winetricks cabextract \
+    # Wine with 32-bit support
+    wine wine32 wine64 winetricks cabextract \
     # Wine dependencies
     winbind \
-    # Additional utilities
-    wget curl unzip supervisor nginx \
+    # Essential utilities
+    wget curl unzip \
     # X11 utilities
     x11-utils x11-apps \
     # Audio support
@@ -42,6 +45,10 @@ RUN apt-get update && apt-get install -y \
     # Additional desktop utilities
     firefox \
     gedit \
+    # Wine dependencies for 32-bit support
+    libc6:i386 libncurses5:i386 libstdc++6:i386 \
+    lib32z1 libbz2-1.0:i386 lib32asound2 lib32fontconfig1 \
+    lib32freetype6 lib32xtst6 libgtk-3-0:i386 \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -74,28 +81,15 @@ export XKL_XMODMAP_DISABLE=1\n\
 # Switch back to root for final setup
 USER root
 
-# Create directories for Roblox Studio
-RUN mkdir -p /opt/roblox-studio
+# Create directories for logs and runtime data
+RUN mkdir -p /var/log /var/run
 
-# Download Roblox Studio installer (this will be done at runtime)
+# Copy essential scripts
 COPY scripts/install-roblox.sh /opt/install-roblox.sh
-RUN chmod +x /opt/install-roblox.sh
-
-# Create nginx configuration for reverse proxy
-COPY nginx.conf /etc/nginx/nginx.conf
-
-# Create supervisor configuration
-COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-
-# Create health check scripts
-COPY scripts/health-check.sh /health-check.sh
 COPY scripts/railway-health-check.sh /railway-health-check.sh
-RUN chmod +x /health-check.sh /railway-health-check.sh
-
-# Create startup scripts
-COPY scripts/start.sh /start.sh
-COPY scripts/railway-optimized-start.sh /scripts/railway-optimized-start.sh
-RUN chmod +x /start.sh /scripts/railway-optimized-start.sh
+COPY scripts/railway-start.sh /scripts/railway-start.sh
+COPY scripts/health-endpoint.sh /scripts/health-endpoint.sh
+RUN chmod +x /opt/install-roblox.sh /railway-health-check.sh /scripts/railway-start.sh /scripts/health-endpoint.sh
 
 # Note: Railway manages persistent storage - no VOLUME declarations needed
 
@@ -107,4 +101,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
     CMD /railway-health-check.sh
 
 # Set the startup command (Railway optimized)
-CMD ["/scripts/railway-optimized-start.sh"]
+CMD ["/scripts/railway-start.sh"]
