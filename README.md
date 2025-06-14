@@ -1,125 +1,182 @@
-# Roblox Studio on Railway
+# Roblox Studio on Railway 🎮
 
-This project sets up Roblox Studio to run in a web browser through Railway.com using VNC and noVNC.
+Production-grade Roblox Studio deployment running in a web browser via Railway.com using VNC and noVNC.
 
-## Features
+## 🚀 Quick Deploy
 
-- 🎮 Full Roblox Studio access through web browser
-- 🖥️ XFCE desktop environment
-- 🌐 noVNC web interface
-- 🍷 Wine compatibility layer for Windows applications
-- ☁️ Deployed on Railway.com
-
-## How it Works
-
-1. **Docker Container**: Ubuntu-based container with XFCE desktop environment
-2. **VNC Server**: Internal desktop server (not exposed externally)
-3. **noVNC + Websockify**: Web-based VNC client accessible through browser
-4. **Wine**: Compatibility layer to run Roblox Studio (Windows app) on Linux
-5. **Railway**: Cloud platform hosting the container (VNC-compatible via noVNC only)
-
-## Deployment Instructions
-
-### Option 1: Deploy to Railway (Recommended)
-
+### Deploy to Railway
 1. **Fork this repository** to your GitHub account
-
-2. **Connect to Railway**:
+2. **Deploy to Railway**:
    - Go to [Railway.app](https://railway.app)
-   - Sign up/Login with GitHub
-   - Click "New Project"
-   - Select "Deploy from GitHub repo"
-   - Choose this repository
+   - Click "New Project" → "Deploy from GitHub repo"
+   - Select your forked repository
+   - Railway will automatically detect the configuration and deploy
 
-3. **Configure Environment**:
-   - Railway will automatically detect the `railway.toml` configuration
-   - The service will be available on port 6080
-
-4. **Access Your Roblox Studio**:
-   - Once deployed, Railway will provide a URL
+3. **Access Roblox Studio**:
+   - Railway will provide a public URL
    - Open the URL in your browser
-   - You'll see the noVNC interface
-   - Password: `robloxstudio2024`
+   - Enter VNC password: `robloxstudio2024`
+   - Wait for Roblox Studio to install automatically
 
-### Option 2: Local Development
+## 🏗️ Architecture
 
+```
+Internet → Railway HTTPS → noVNC Web Interface → VNC Server → XFCE Desktop → Roblox Studio
+```
+
+**Components:**
+- **Docker Container**: Ubuntu 22.04 with XFCE4 desktop
+- **VNC Server**: TightVNC for desktop access (internal only)
+- **noVNC**: Web-based VNC client accessible via browser
+- **Wine**: Compatibility layer to run Roblox Studio on Linux
+- **Railway**: Cloud platform with automatic HTTPS and scaling
+
+## ⚙️ Configuration
+
+### Environment Variables (Pre-configured)
+```
+PORT=6080                    # Web interface port
+DISPLAY=:1                   # X11 display
+VNC_PASSWORD=robloxstudio2024 # VNC access password
+RESOLUTION=1920x1080         # Desktop resolution
+COLOR_DEPTH=24               # Color depth (8/16/24/32)
+```
+
+### Security Features
+- ✅ VNC server runs internally only (not exposed to internet)
+- ✅ Access only through encrypted noVNC web interface
+- ✅ Railway provides HTTPS by default
+- ✅ Input validation and error handling
+- ✅ Process monitoring and auto-restart
+
+## 🎯 Production Features
+
+### Reliability
+- **Health Checks**: Automatic service monitoring
+- **Auto-restart**: Services restart if they crash
+- **Error Handling**: Comprehensive error handling and logging
+- **Retry Logic**: Automatic retries for network operations
+- **Process Monitoring**: Continuous monitoring of VNC and websockify
+
+### Performance
+- **Optimized Startup**: Fast boot with dependency checking
+- **Resource Management**: Efficient process management
+- **Logging**: Structured logging for debugging
+- **Cleanup**: Automatic cleanup of temporary files
+
+## 📁 File Structure
+
+```
+├── Dockerfile                    # Container configuration
+├── railway.toml                  # Railway deployment config
+├── README.md                     # This file
+├── .env.example                  # Environment variables template
+├── .gitignore                    # Git ignore rules
+└── scripts/
+    ├── railway-start.sh          # Main startup script
+    ├── railway-health-check.sh   # Health check script
+    ├── install-roblox.sh         # Roblox Studio installer
+    └── health-endpoint.sh        # HTTP health endpoint
+```
+
+## 🎮 Using Roblox Studio
+
+### First Launch
+1. **Wait for Setup**: Initial startup takes 2-3 minutes
+2. **Roblox Installation**: Roblox Studio installs automatically in background
+3. **Desktop Access**: Full XFCE4 desktop environment
+4. **Launch Studio**: Find Roblox Studio in Applications menu
+
+### Development Workflow
+1. **Login**: Use your Roblox account to login
+2. **Create**: Build games using full Roblox Studio features
+3. **Save**: Projects are automatically saved in the container
+4. **Publish**: Publish directly to Roblox from the web interface
+
+## 🔧 Troubleshooting
+
+### Common Issues
+
+**Connection Failed**
+- Wait 2-3 minutes for services to start
+- Refresh the browser page
+- Check Railway deployment logs
+
+**Slow Performance**
+- Close unnecessary desktop applications
+- Use stable internet connection
+- Consider upgrading Railway plan
+
+**Roblox Studio Missing**
+- Installation happens automatically on first run
+- Check desktop for installation progress
+- May take 5-10 minutes depending on connection
+
+### Monitoring
+- **Railway Logs**: Check deployment logs in Railway dashboard
+- **Health Check**: Service includes built-in health monitoring
+- **Process Status**: Automatic restart if services fail
+
+## 💰 Railway Pricing
+
+| Plan | RAM | vCPU | Use Case |
+|------|-----|------|----------|
+| Hobby | Free tier | Limited | Testing |
+| Pro | 8GB+ | Multiple | Development |
+| Team | 32GB+ | High | Production |
+
+## 🔒 Security Notes
+
+### Production Recommendations
+1. **Change VNC Password**: Update `VNC_PASSWORD` in Railway environment
+2. **Monitor Usage**: Keep track of resource usage
+3. **Regular Updates**: Keep the deployment updated
+4. **Backup Projects**: Use Roblox's cloud sync features
+
+### Default Security
+- VNC server is internal only (not exposed to internet)
+- HTTPS encryption provided by Railway
+- Rate limiting and basic security headers
+- Input validation and sanitization
+
+## 🚀 Advanced Usage
+
+### Custom Configuration
+Update environment variables in Railway dashboard:
 ```bash
-# Build the Docker image
-docker build -t roblox-studio-web .
-
-# Run the container
-docker run -p 6080:6080 -p 5901:5901 roblox-studio-web
-
-# Access via browser
-open http://localhost:6080
+VNC_PASSWORD=your-secure-password
+RESOLUTION=1366x768  # Lower resolution for better performance
+COLOR_DEPTH=16       # Reduce color depth for speed
 ```
 
-## Usage
-
-1. **Access the Desktop**: Open the Railway URL in your browser
-2. **VNC Password**: Enter `robloxstudio2024` when prompted
-3. **Wait for Installation**: Roblox Studio will install automatically on first run
-4. **Start Creating**: Once installed, you can launch Roblox Studio and start building games!
-
-## Important Notes
-
-### Performance Considerations
-- **Latency**: There will be some input lag due to VNC over the internet
-- **Graphics**: Limited to software rendering (no GPU acceleration)
-- **Bandwidth**: Video streaming requires good internet connection
-
-### Limitations
-- **Publishing**: You'll need to log into your Roblox account to publish games
-- **File Access**: Files are stored in the container (consider using cloud storage for persistence)
-- **Performance**: Not as smooth as native Roblox Studio
-
-### Recommended Workflow
-1. Use this for quick edits and testing
-2. For serious development, consider downloading projects locally
-3. Use Roblox's built-in cloud sync features when possible
-
-## Troubleshooting
-
-### Connection Issues
-- Ensure the Railway service is running
-- Check that port 6080 is accessible
-- Try refreshing the browser
-
-### Roblox Studio Issues
-- If installation fails, restart the container
-- Wine compatibility may cause some features to not work perfectly
-- For best results, use simple Roblox Studio features
-
-### Performance Issues
-- Close unnecessary applications in the desktop environment
-- Use a stable internet connection
-- Consider using during off-peak hours
-
-## File Structure
-
-```
-.
-├── Dockerfile              # Container configuration
-├── railway.toml            # Railway deployment config
-├── supervisord.conf        # Process management
-├── scripts/
-│   ├── install-roblox.sh  # Roblox Studio installer
-│   └── start.sh           # Container startup script
-└── README.md              # This file
+### Local Development
+```bash
+# Build and run locally
+docker build -t roblox-studio .
+docker run -p 6080:6080 roblox-studio
+# Access via http://localhost:6080
 ```
 
-## Security Notes
+## 📈 Performance Tips
 
-- The VNC password is set to `robloxstudio2024` (change in production)
-- VNC server is only accessible internally via noVNC web interface
-- Railway provides HTTPS by default for secure web access
-- This setup is intended for development/testing purposes
-- Consider additional security measures for production use
+1. **Optimize Resolution**: Lower resolution = better performance
+2. **Stable Internet**: Use wired connection when possible
+3. **Close Apps**: Close unnecessary desktop applications
+4. **Monitor Resources**: Watch Railway resource usage
+5. **Regular Restart**: Restart service periodically for optimal performance
 
-## Contributing
+## 🆘 Support
 
-Feel free to submit issues and pull requests to improve this setup!
+- **GitHub Issues**: Report bugs and request features
+- **Railway Discord**: [discord.gg/railway](https://discord.gg/railway)
+- **Railway Docs**: [docs.railway.app](https://docs.railway.app)
 
-## License
+## 📝 License
 
 This project is open source. Roblox Studio is property of Roblox Corporation.
+
+---
+
+**Ready to build games in the cloud! 🎯**
+
+> **Note**: This setup runs Windows applications on Linux via Wine. Some advanced features may have compatibility limitations.
