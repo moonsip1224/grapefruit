@@ -18,8 +18,8 @@ RUN dpkg --add-architecture i386
 
 # Install system dependencies with proper wine32 support
 RUN apt-get update && apt-get install -y \
-    # Desktop environment
-    xfce4 xfce4-goodies dbus-x11 \
+    # Lightweight desktop environment
+    fluxbox openbox xterm dbus-x11 \
     # VNC server
     tightvncserver \
     # noVNC for web access

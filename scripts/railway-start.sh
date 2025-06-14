@@ -84,14 +84,10 @@ setup_environment() {
     # Create X authority file
     su - vncuser -c "touch ~/.Xauthority && chmod 600 ~/.Xauthority"
     
-    # Create optimized VNC startup script
+    # Create lightweight VNC startup script
     su - vncuser -c "cat > ~/.vnc/xstartup << 'EOF'
 #!/bin/bash
-# VNC startup script for XFCE4
-
-# Clear environment
-unset SESSION_MANAGER
-unset DBUS_SESSION_BUS_ADDRESS
+# Lightweight VNC startup script for Railway
 
 # Set display
 export DISPLAY=:1
@@ -99,35 +95,37 @@ export DISPLAY=:1
 # Load X resources
 xrdb \$HOME/.Xresources 2>/dev/null || true
 
-# Set background
-xsetroot -solid '#2e3440' 2>/dev/null || true
+# Set a solid background
+xsetroot -solid '#2c3e50' 2>/dev/null || true
 
 # Disable keyboard mapping issues
 export XKL_XMODMAP_DISABLE=1
 
-# Start D-Bus session
-if [ -z \"\$DBUS_SESSION_BUS_ADDRESS\" ]; then
-    eval \$(dbus-launch --sh-syntax) 2>/dev/null || true
+# Start lightweight window manager
+if command -v fluxbox >/dev/null 2>&1; then
+    fluxbox &
+elif command -v openbox >/dev/null 2>&1; then
+    openbox &
+else
+    twm &
 fi
 
-# Start window manager with fallback
-if command -v startxfce4 >/dev/null 2>&1; then
-    exec startxfce4 2>/dev/null
-else
-    # Fallback to basic window manager
-    exec xfwm4 2>/dev/null || exec twm 2>/dev/null
-fi
+# Start terminal emulator
+xterm -geometry 80x24+10+10 -title \"Railway Desktop\" &
+
+# Keep the session alive
+wait
 EOF
 chmod +x ~/.vnc/xstartup"
 
     # Create VNC config file
     su - vncuser -c "cat > ~/.vnc/config << 'EOF'
-session=startxfce4
 geometry=$VNC_GEOMETRY
 localhost
 alwaysshared
 dontdisconnect
 depth=$COLOR_DEPTH
+desktop=Railway-Desktop
 EOF"
 }
 
@@ -181,8 +179,10 @@ start_vnc() {
     su - vncuser -c "cat ~/.vnc/*.log 2>/dev/null | tail -30" || true
     log "Checking xstartup script..."
     su - vncuser -c "cat ~/.vnc/xstartup" || true
-    log "Testing XFCE4 availability..."
-    command -v startxfce4 && echo "startxfce4 found" || echo "startxfce4 NOT found"
+    log "Testing window manager availability..."
+    command -v fluxbox && echo "fluxbox found" || echo "fluxbox NOT found"
+    command -v openbox && echo "openbox found" || echo "openbox NOT found"  
+    command -v twm && echo "twm found" || echo "twm NOT found"
     return 1
 }
 
