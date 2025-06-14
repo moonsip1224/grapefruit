@@ -47,8 +47,8 @@ RUN apt-get update && apt-get install -y \
     gedit \
     # Wine dependencies for 32-bit support
     libc6:i386 libncurses5:i386 libstdc++6:i386 \
-    lib32z1 libbz2-1.0:i386 lib32asound2 lib32fontconfig1 \
-    lib32freetype6 lib32xtst6 libgtk-3-0:i386 \
+    lib32z1 libbz2-1.0:i386 libasound2:i386 libfontconfig1:i386 \
+    libfreetype6:i386 libxtst6:i386 libgtk-3-0:i386 \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
