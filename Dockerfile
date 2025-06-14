@@ -34,8 +34,9 @@ RUN apt-get update && apt-get install -y \
     x11-utils x11-apps \
     # Audio support
     pulseaudio \
-    # Fonts
+    # Fonts (including X11 fonts for VNC)
     fonts-liberation fonts-dejavu-core \
+    xfonts-base xfonts-75dpi xfonts-100dpi \
     # Process management
     psmisc \
     # Health check utilities

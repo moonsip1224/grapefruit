@@ -115,7 +115,6 @@ localhost
 alwaysshared
 dontdisconnect
 depth=$COLOR_DEPTH
-SecurityTypes=None
 EOF"
 }
 
@@ -145,9 +144,9 @@ start_vnc() {
             continue
         fi
         
-        # Start VNC server with explicit settings
+        # Start VNC server with compatible settings
         log "Starting VNC server (attempt $((retry_count + 1))/$max_retries)..."
-        if su - vncuser -c "vncserver :1 -geometry $VNC_GEOMETRY -depth $COLOR_DEPTH -localhost -nolisten tcp -SecurityTypes None"; then
+        if su - vncuser -c "vncserver :1 -geometry $VNC_GEOMETRY -depth $COLOR_DEPTH -localhost -dontdisconnect"; then
             # Wait and verify VNC is running
             sleep 5
             if pgrep -f "Xvnc.*:1" >/dev/null && ss -ln | grep -q ":5901"; then
