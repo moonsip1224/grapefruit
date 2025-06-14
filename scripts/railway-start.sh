@@ -84,37 +84,32 @@ setup_environment() {
     # Create X authority file
     su - vncuser -c "touch ~/.Xauthority && chmod 600 ~/.Xauthority"
     
-    # Create lightweight VNC startup script
+    # Create ultra-minimal VNC startup script
     su - vncuser -c "cat > ~/.vnc/xstartup << 'EOF'
 #!/bin/bash
-# Lightweight VNC startup script for Railway
+# Ultra-minimal VNC startup for Railway containers
 
 # Set display
 export DISPLAY=:1
 
-# Load X resources
-xrdb \$HOME/.Xresources 2>/dev/null || true
+# Set background (basic X11)
+xsetroot -solid gray &
 
-# Set a solid background
-xsetroot -solid '#2c3e50' 2>/dev/null || true
-
-# Disable keyboard mapping issues
-export XKL_XMODMAP_DISABLE=1
-
-# Start lightweight window manager
-if command -v fluxbox >/dev/null 2>&1; then
-    fluxbox &
-elif command -v openbox >/dev/null 2>&1; then
-    openbox &
-else
+# Start the most basic window manager available
+if command -v twm >/dev/null 2>&1; then
     twm &
+else
+    # Fallback: just run without window manager
+    sleep 1 &
 fi
 
-# Start terminal emulator
-xterm -geometry 80x24+10+10 -title \"Railway Desktop\" &
+# Start a terminal
+xterm -geometry 100x30+10+10 -title \"Railway Terminal\" &
 
-# Keep the session alive
-wait
+# Keep session alive with infinite loop
+while true; do
+    sleep 3600
+done
 EOF
 chmod +x ~/.vnc/xstartup"
 
